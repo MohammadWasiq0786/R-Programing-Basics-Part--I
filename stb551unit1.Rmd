@@ -1,0 +1,457 @@
+---
+title: "Statistical Analysis Using R Unit-1"
+author: "MOHAMMAD WASIQ"
+date: "9/4/2020"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+# Introduction to R language
+
+## What is R ?
+
+**R** is a language and environment for statistical computing . It has following features:
+
+* It is free and can be downloaded from intenet: http://cran.r-project.org. It requires only 80 Mb spaces.
+
+*It is a functional language.
+
+* It has very powerful graphic capabilities.
+
+* It has capabilities to interface with other important packages for data analysis and graphics.
+
+## Creating a vector in R---'c()'
+
+Let us define a vector $x$ as 
+```{r vect1}
+x=c(5,4,3,1,4) # define x vector
+x
+length(x)
+```
+
+Note that R commands are written in a chunk which begins with three back ticks and ends with three back ticks. The command ```{r vect1}``` specifies that chunk is for R language and it is labeled by 'vect1'. All the R commands are to be written inside the chunk.
+
+## Arithmetic Operations on vectors
+
+There are five basic operators in R, namely '+, -, *, / ^' , which   are meant for addition , negation , multiplication , dividatiuon , exponentiation respectively. Besides these basic operators, a large  number of function are 
+also available for arithmetic computations. Let us create a new chumk:
+
+```{r arithmeticopvect1}
+sum(x) # sum of elements 
+sum(x^2) # sum of squares 
+sqrt(x) # square root of x 
+log(x) # log of x with base e
+log(x, base=10)# log of x with 10
+log(x, base=5) # log of x with 5
+1/x # inverse of x
+x^-1 # same as above
+sin(x) 
+cos(x)
+tan(x)
+mean(x)
+var(x) # variance of x
+sd(x) # standard deviation of x
+cv=function(x) sd(x)/mean(x)*100
+dump("cv", file="cv.txt")
+source("cv.txt")
+cv(x)
+```
+## Concept of recycling rule
+
+The basic rele is that smaller vector recycles upto the length of the larger vector. Let us see the commands in the following chunk;
+```{r rec1}
+x=c(5,4,3,1,4)
+x+1 # 1 will recycle up to the length of x andd add
+2*x
+log(x+1)
+sin(2*x)
+```
+
+## The function repeat---'rep()'
+```{r rep1}
+rep(c(1,2),c(3,3)) # repeat 1 3 times and 2 also 3 times
+rep(c(1,2),each=4)
+tasbihefatimi=rep(c("SubhanAllah","Alhamadulliah","Allahuakbar"),c(33,33,34))
+tasbihefatimi
+rep(c("R1","R2","R3"),c(3,2,4))
+```
+## Logical operators---TRUE(1),FALSE(0)
+```
+>, <, <=,>=, == exactly equal to, != not equal to
+```
+```{r logic1}
+x=c(2,5,3,1,8)
+x>3
+sum(x>3)
+(x[x>2])
+mean(x[x>2])
+mean(x[x<3])
+mean(x<3)
+#logical expression | or, & , and
+x>2 & x<4
+x[x>2 & x<4]
+```
+## Missing values--- NA is.na()
+
+```{r missing1}
+x=c(2,5,3,NA,6)
+is.na(x)
+mean(x)
+mean(x,na.rm=TRUE)
+!is.na(x)
+mean(x[!is.na(x)])
+## Not a number, NaN, 0/0, Inf-Inf, Inf/Inf
+x=c(0,5,3)
+x/x
+is.na(x/x)
+x=c(2,5,8)
+x
+names(x)=c("Zainul","Altamash","Wasiq")
+x
+barplot(x)
+```
+
+**paste()**
+The function 'paste()' behave like 'c()' but it always returns a character vector.
+
+**letters** and **LETTERS**
+
+```{r let1}
+letters
+LETTERS
+letters[c(3,6)]
+LETTERS[1:6]
+month.abb
+month.abb[c(3,9)]
+month.abb[3:9]
+month.name
+```
+
+**substrin**
+
+```{r sub1}
+substr(month.name,1,4)
+```
+
+## Factor vector---'factor()', 'ordered()'
+Factor is like the 
+
+```{r fact1}
+grp=c("control","treatment","control","treatment")
+grp
+grp=factor(grp)
+as.integer(grp)
+# factor are efficient ways of storing data
+as.integer(grp)
+levels(grp)
+```
+
+## Matrices and arrays--- 'matrix()' , 'arrays()'
+The function 'matrix()' is used to create a matrix.
+```{r mat1}
+m=matrix(1:6,nrow=2,ncol=3)
+m
+dim(m)
+dimnames(m)=list(LETTERS[1:2],letters[1:3])
+m
+colnames(m)=c("Samad","Radha","Umar")
+m
+rownames(m)=c("Moradabad","Aligarh")
+m
+matrix(1:6,ncol=3,byrow=TRUE)
+# Extraction of a matrix---[]
+m[1,3]
+m[,c(1,2)]
+m[c(1,2),3]
+## arrays()
+array(1:8,c(2,2,2))
+# naming arrays
+dim(array)
+```
+
+## Data frame---'data.farme()'
+These are objects, a kind of generalization of matrices. Generalization in the sense that columns can be of different types from each other. This flexibility is not with matrices. Use 'data.frame()' to construct a data from vector:
+
+```{r df1}
+colors=c("red","yellow","blue")
+numbers=c(1,2,3)
+colors_numbers=data.frame(colors, numbers)
+colors_numbers
+colors=c("red","yellow","blue")
+numbers=c(1,2,3)
+more_numbers=c(5,4,7)
+colors_numbers=data.frame(colors,numbers,more_numbers)
+colors_numbers
+colors=c("red","yellow","blue")
+numbers=c(1,2,3)
+more_numbers=c(5,4,7)
+colors_numbers=data.frame(Colors=colors,Numbers=numbers,MoreNUMBERS=more_numbers)
+colors_numbers
+# change row names
+row.names(colors_numbers)=paste0("Row",1:3)
+colors_numbers
+# extraction from data.frame
+colors_numbers[c(1,3),]
+DF2=colors_numbers[,c(1,3)]
+DF2
+```
+
+
+## Built in graphic function---'hist()', 'plot()', 'curve()'
+**  Histogram **
+```{r hist}
+x=c(12,15,13,20,14,16,10,10,8,15)
+hist(x)
+hist(x,prob=TRUE)
+## Scatter plot
+x=seq(1,10)
+y=x^2-10*x
+plot(y~x)
+## Curve
+curve(x^2,from=-2,to=2)
+curve(expr=sin,from=0,to=6*pi)
+curve(dnorm(x),from=-3,to=3)
+## Suppose you want to plot a function which is not defined in R.
+# Plot f1(x)=2x+3x^2, -2 to 3
+f1=function(x) 2*x+3*x^2
+curve(f1,from=-2,to=3)
+curve(f1,from=-3,to=3)
+curve(f1,from=-3,to=3,lwd=2)
+curve(f1,from=-3,to=3,lwd=2,col="red")
+curve(f1,from=-3,to=3,lwd=3,col="blue")
+curve(f1,from=-3,to=3,lwd=5,col="green")
+```
+
+## Histogram, Frequency Curve, Polygon, Ogive for a data
+```{r ogive1}
+# weight of 30 students
+weight=c(68,53,69.5,55,71,63,76.5,65.5,69,75,76,57,70.5,71.5,56,81.5,69,59,67.5,61,68,59.5,56.5,73,61,72.5,71.5,59.5,74.5,63)
+dump("weight","weight.dat")
+length(weight)
+# Create Histogram
+h1=hist(weight)
+h1
+h1$breaks
+# Frequency polygon on histogram itself
+lines(h1$mids,h1$counts,type="o")
+plot(h1$mids,cumsum(h1$counts),type="o")
+stem(weight)
+# Create a pie chart for the same data
+pie(h1$count,label=h1$mids)
+```
+
+##Graphics with R
+There are two type of graphic functions:
+
+1. High level graphic functions which always create a new plot. Examples are; plot(),hist(), barplot(),
+dotchart(), pie(), curve().
+
+2. Low level graphic functions: They add on existing plot. For example, lines(), points(), mtext(),
+main(), sub().
+
+**Example**: Bar charts and dot charts The data VADeaths a data set in R contains death rates (number of
+deaths per 1000 population per year) in various subpopulations within state of Viginia in 1940. This may
+be plotted as barchart.
+```{r vaeath1}
+VADeaths
+barplot(VADeaths, beside = TRUE, legend=TRUE,ylim=c(0,90),
+ylab = "Deaths per 1000", main="Death rates in Virginia")
+```
+
+# Dot Chart---'dotchart()'
+Position of dot of corresponding number.
+```{r dotchart1}
+dotchart(VADeaths, xlim=c(0,75), xlab="Deaths per 1000", main="Death rate in Virginia")
+```
+
+## Pie chart
+Pie chart displays a vector of numbers by breaking up a circular disk into pieces whose angle (and hence
+area) is proportional to each number. For example, the letter grades assigned to each class might arise in
+the proportions shown in the following figure:
+```{r pie1}
+groupsizes=c(18,30,32,10,10)
+labels=c("A","B","C","D","F")
+pie(groupsizes, labels, col=c("grey40", "white","grey","black", "grey90"))
+```
+
+## Histogram--—hist()
+**Example for histogram**
+```{r hist2}
+# simulate 5000 observations from N(0,1)
+# make a histogram for the simulated data
+x=rnorm(n=1000,mean=0,sd=1)
+x
+mean(x)
+sd(x)
+hist(x,prob=TRUE)
+curve(dnorm(x,mean=0,sd=1),add=TRUE,lwd=2) #to add on histogram
+# An example with exponential
+xe=rexp(1000,rate=0.06)
+mean(xe)
+hist(xe, prob=TRUE)
+curve(dexp(x,rate=0.06),add=TRUE)
+curve(dexp(x,rate=0.10),add=TRUE)
+```
+
+```{r weib1}
+# Simulate 1000 random values from Weibull(shape=1.2,scale=16)
+xw=rweibull(n=1000,shape=1.5, scale=80)
+hist(xw,prob=TRUE,ylim=c(0,.01))
+curve(dweibull(x,shape=1.5,scale=80),add=TRUE)
+```
+
+## Details of histogram
+```{r histod1}
+x=rnorm(1000)
+hist(x,prob=TRUE)
+curve(dnorm(x),add=TRUE)
+```
+## Box plot---boxplot()
+```{r weibullbox}
+y=rweibull(1000,shape=1.5,scale=50)
+hist(y,prob=TRUE)
+boxplot(y,horizontal=TRUE)
+median(y)
+quantile(y,prob=c(0.25,.50,.75))
+min(y)
+max(y)
+IQR(y)
+LowerWhisker=max(min(y),20.449-1.5*IQR(y))
+LowerWhisker
+UpperWhisker=min(max(y),60.734+1.5*IQR(y))
+UpperWhisker
+```
+
+## Box plot of 'Iris' data
+```{r boxiris}
+names(iris)
+head(iris)
+tail(iris)
+str(iris)
+boxplot(Sepal.Length~Species,data=iris)
+```
+
+## Scatter plot---'plot()'
+```{r scatter1}
+x= rnorm(100) # assigns 100 random normal observations to x
+y=rpois(100,30)
+mean(y)
+mean(x)
+sd(x)
+plot(x,y,main="Poisson versus Normal")
+plot(x,y,pch=16,type="points")
+plot(x,y,type="l") #lines
+plot(sort(x),sort(y),type="l")
+```
+
+## Plotting From a data frame
+```{r plotDF}
+data(Orange)
+names(Orange)
+head(Orange)
+tail(Orange)
+str(Orange)
+Orange$Tree #extract column of Tree
+unique(as.character(Orange$Tree))
+plot(circumference~age, data = Orange)
+plot(circumference~age, data = Orange, pch = as.character(Tree),
+cex = 0.75)
+```
+
+## QQ plot
+```{r qql}
+z<-rnorm(10000,mean=0,sd=1)
+quantile(z,prob=c(0.25,.50,.75))
+par(mfrow = c(1,4))
+X=rnorm(1000)
+A=rnorm(1000)
+qqplot(X,A,main="A and X are the same")
+B=rnorm(1000,mean=3,sd=2)
+qqplot(X,B,main="B is rescaled X")
+C=rt(1000,df=2)
+qqplot(X,C,main="C has heavier tails")
+par(mfrow=c(1,1))
+curve(dt(x,df=100),from=-5,to=5)
+curve(dnorm(x),add=TRUE,lty=2)
+```
+
+# Low level graphic functions
+## Adding to plots
+
+* points(x, y, ...) # adds point
+* lines(x, y, ...) # adds line segments
+* text(x, y, labels, ...) # adds text into the graph
+* abline(a, b, ...) # adds the line $y = a + bx$
+* abline(h = y, ...) # adds a horizontal line
+* abline(v = x, ...) # adds a vertical line
+* polygon(x, y, ...) # adds a closed and possibly filled polygon
+* segments(x0, y0, x1, y1, ...) # draws line segments
+* arrows(x0, y0, x1, y1, ...) # draws arrows
+* symbols(x, y, ...) # draws circles, squares, thermometers, etc.
+  legend(x, y, legend, ...) # draws a *legend
+
+# Linear Models--- 'lm()'
+```{r lm1}
+y=c(2,4,5,4,10)
+x=c(4,5,10,12,10)
+plot(y~x)
+# y=beta0+beta1*x+error
+M1=lm(y~x)
+coef(M1)
+abline(lm(y~x))
+abline(M1,lwd=2,lty=2,col="red")
+```
+## Example Orange data
+```{r circumfrence1}
+plot(circumference~age, pch=as.numeric(as.character(Tree)),data=Orange)
+abline(lm(circumference~age,data=Orange,subset=Tree=="1"))
+abline(lm(circumference~age,data=Orange,subset=Tree=="2"),lty=2,lwd=2)
+abline(lm(circumference~age,data=Orange,subset=Tree=="3"),lty=3)
+abline(lm(circumference~age,data=Orange,subset=Tree=="4"),lty=4)
+abline(lm(circumference~age,data=Orange,subset=Tree=="5"),lty=5)
+legend("bottomright",legend = paste("Tree",1:5),lty=1:5,lwd=c(1,1,2,1,1))
+```
+```{r figAnn1}
+par(mar=c(5,5,5,5)+0.1)
+plot(c(1,9),c(0,50),type='n' ,xlab="", ylab="")
+text(6, 40, "Plot region")
+points(6, 20)
+text(6, 20, "(6, 20)", adj = c(0.5, 2))
+mtext(paste("Margin", 1:4), side = 1:4, line = 3)
+mtext(paste("Line", 0:4), side = 1, line = 0:4, at = 3, cex = 0.6)
+mtext(paste("Line", 0:4), side = 2, line = 0:4, at = 15, cex = 0.6)
+mtext(paste("Line", 0:4), side = 3, line = 0:4, at = 3, cex = 0.6)
+mtext(paste("Line", 0:4), side = 4, line = 0:4, at = 15, cex = 0.6)
+```
+
+## Axis and Tricks
+```{r axix}
+hist(log(1000*islands, 10), axes = FALSE, xlab = "Area (in sq. miles)",
+main = "Areas of the World’s Largest Islands")
+box()
+axis(side = 1, at = 4:7, labels = c("10,000", "100,000", "1,000,000",
+"10,000,000"))
+axis(side = 2)
+```
+
+## Boxplot with some additional features
+motor
+## Brand 1 Brand 2 Brand 3 Brand 4 Brand 5
+## 1 13.1 16.3 13.7 15.7 13.5
+## 2 15.0 15.7 13.9 13.7 13.4
+## 3 14.0 17.2 12.4 14.4 13.2
+## 4 14.4 14.9 13.8 16.0 12.7
+## 5 14.0 14.4 14.9 13.9 13.4
+## 6 11.6 17.2 13.3 14.7 12.3
+```{r box12}
+data("motor")
+boxplot(motor)
+boxplot(motor, ylab = "Vibration", axes = FALSE)
+title("Motor Vibration Data")
+mtext("The Effects of Different Bearings", side = 3, line = 0)
+box()
+axis(side=2, las=2)
+axis(side = 1, at = 1:5, label = names(motor))
+```
+

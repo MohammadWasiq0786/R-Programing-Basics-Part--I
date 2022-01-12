@@ -1,0 +1,676 @@
+---
+title: "Statistical Analysis Using R Unit-2"
+author: "Mohammad Wasiq , GL0427, 18STB-028"
+date: "9/29/2020"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+# Unit - II
+Generate automated reports, giving detailed description of statistics,correlation and lines of regression.
+
+## Defining new function --- ' function()'
+The structure is of the type:
+$$name=function(argument1,argument2,.....) expression$$
+
+## Example1:Define a function for coefficient of variation 'cv' 
+```{r cv1}
+cv=function(x) sd(x)/mean(x)*100
+dump("cv", file="cv.txt")
+source("cv.txt")
+# create a data vector of height and compute its cv
+height=c(168,153,154,170)
+cv(x=height)
+```
+
+## Example 2: Define a function for standard error of mean---'sem()'
+
+```{r sem1}
+# define standard error of mean
+sem=function(x) sd(x)/sqrt(length(x))
+dump("sem",file="sem.txt" )
+source("sem.txt")
+sem(height)
+sem(trees$Girth)
+sem(trees$Volume)
+```
+
+## Descriptive statistics of a data vector---'describe()'
+
+Define a function which takes a data vector as input and returns mean, sd, sem and cv.
+```{r deScr1}
+describe=function(x) {
+# x is a data vector 
+n=length(x)
+m=mean(x)
+s=sd(x)
+sem=s/sqrt(n)
+cv=s/m*100
+out=list(Mean=m,SD=s,SEM=sem,CV=cv)
+return(out)
+}
+dump("describe","describe.txt")
+describe(height)
+OUT1=describe(height)
+OUT1$Mean
+```
+## Suppose you define a new vector of weight as 'weight' and need to  compute its descriptive statistics using 'describe()'
+```{r weight1}
+weight=c(55,60,65,78,80,64,63)
+describe(weight)
+describe(trees$Volume)
+```
+
+## Define 'describe()' which can handle missing values---'na.omit()'
+
+Add the  feature for handling missing values. Note that the command is 'na.omit()'. NOw we are going to redefine describe with names 'describe_na'
+```{r missing1}
+# a function which handles missing values
+describe_na=function(x) {
+# x is a data vector
+x=na.omit(x)  
+n=length(x)
+m=mean(x)  
+s=sd(x)  
+sem=s/sqrt(n)  
+cv=s/m*100
+out=list(Mean=m,SD=s,SEM=sem,CV=cv)
+return(out)
+}
+dump("describe_na",file="describe_na.txt")
+y1=c(12,15,16,NA,20,25,30)
+describe(x=y1)
+describe_na(x=y1)
+```
+
+## Extend the function 'describe()' for data frame
+
+We  shall extend the  definition  of 'describe()' when input is a data frame and not a vector. Moreover, it will return the data frame as output and not as list.
+First we will create a dataframe which will be used as argument in the function names as 'describeDF()'.
+```{r desDF1}
+# Create a data frame of height and weight of 5 students of B.Sc.
+# Vth Semester
+height=c(166,170,165,165,166) 
+weight=c(55,60,58,59,64)
+heightWeight=data.frame(Height=height,Weight=weight)
+heightWeight
+# define the function 'describeDF()' which will take data frame as input and return data frame as output.
+describeDF=function(x) {
+# x is a data frame , not a vector
+x=data.frame(x)  # to make sure that x is a data frame
+n=nrow(x)  # number of rows
+m=apply(x,2,mean) # compute mean of each column
+s=apply(x, 2,sd)
+cv=s/m*100
+se=s/sqrt(n)
+min=min(x)
+max=max(x)
+out=(data.frame(Mean=m,SD=s,CV=cv,SEM=se,Max=max,Min=min))
+return(out)
+dump("describeDF",file="describeDF.txt")  # to save it
+source("describeDF.txt")
+}
+```
+
+## Data Frame
+
+Now we shall make use of this function to return  the descriptive statistics of a data frame.
+```{r describeDF2}
+outDF1=describeDF(x=heightWeight)
+outDF1
+write.csv(outDF1,file="outDF1.csv")
+```
+
+## Use the tree data and find ots summary using 'describeDF()'
+```{r trees1}
+describeDF(trees)
+out1=describeDF(trees)
+round(out1,3)
+```
+### Excercise 1:
+Modify the function 'describeDF()' by adding columnof 'min()' and 'max()' in the beginning.
+* Ans: These (min & max) are added in line 91 where the chunk 'describeDF()' starts.
+
+### Excercise 2: 
+* (i) Create data.frame using the function 'fix()' and save it as '.txt'file and analyze that using 'describeDF2()'.
+* (ii) Analyze same data using the 'summary()' function of R.
+       Compare the results obtained.
+
+##  Matrix operations in R
+```{r mat1}
+# 3x1-4x2=6
+# x1+2x2=-3
+# Ax=b
+# x=A(^-1)b
+# solve(A,x)
+A=matrix(c(3,1,-4,2),ncol=2)
+A
+b=c(6,-3)
+x=solve(A,b)
+x
+solve(A)%*%b
+# Create of a matrix using cbind and rbind function
+x1=c(2,4)
+x2=c(3,8)
+x12=cbind(x1,x2)
+x12
+xr12=rbind(x1,x2)
+xr12
+```
+
+## Linear Models with R 
+
+$$(y, X\beta, \sigma^2I)$$
+This Gauss Markov set up can be rewritten as:
+$$y=X\beta+e$$
+This model is termed as general linear model. It is to be noted that $y$ is the vector of responces,$X$ is termed as model matrix, and $\beta$ is known as vector of regression coefficients. However,$\sigma^2$ is known as residual variance, $I$ stands stands for indentity marix of order $n \times n$.
+
+The method of least squares is used to estimate $\beta$. This method states that we will choose that value of $\beta$ which will minimize error sum of squares defined as:
+$$errorSS=e^{T}e=(y-X\beta)^{T}(y-X\beta)$$
+and the result is solution normal equations defined as:
+$$(X^{T}X)\hat{\beta}=X^{T}y$$
+alternatively least squares estimate of $\beta$ is defined as:
+$$\hat{\beta}=(X^{T}X)^{-1}X^{T}y$$
+This implies that variance covariance matrix of $\hat{\beta}$ is :
+$$Var(\hat{\beta})=\sigma^2(X^{T}X)^{-1}$$
+and its estimate is
+$$\widehat{Var(\hat{\beta})}=\hat{\sigma^2}(X^{T}X)^{-1}$$
+The diagonal elements of this matrix are variances and non-diagonals are covariances. Thus standard error of $\beta$ is 
+$$SE{\hat{(\beta)}}=\sqrt{diag({\widehat{Var(\hat{\beta})}}})$$
+, where 
+$$\hat{\sigma}^2=\frac{ResidSS}{n-(p+1)}=MSresidual$$
+where $$ResidSS=(y-X\hat{\beta})^{T}(y-X\hat{\beta})$$
+
+## Explanation and implementations with R 
+
+We will make illustration with 'forbes' data available with the **MASS** package.
+```{r forbes1}
+library(MASS)
+data(forbes)
+forbes
+# Step by step commands
+y=forbes$bp # response vector
+y
+x=forbes$pres # regressor
+x
+X=cbind(1,x)  # model matrix
+X
+n=nrow(X)
+n
+p1=ncol(X)
+p1
+XtX=crossprod(X,X) # X^TX
+XtX
+Xty=crossprod(X,y) # X^Ty
+Xty
+beta= solve(XtX,Xty) # $$(\hat{\beta})$$
+beta
+resid=y-X%*%beta # residual
+resid
+rss= sum(resid^2) # Residual SS
+rss
+msresid=rss/(n-p1)
+msresid
+sebeta=sqrt(diag(msresid*solve(XtX)))
+tratio=beta/sebeta
+pvalue=2*(1-pt(abs(tratio),df=n-p1)) # p-value
+# Note that if p value is less than 0,05, we reject HO for beta.
+beta
+sebeta
+tratio
+pvalue
+```
+**Regression Coefficient** : Change in responce $y$ for unit change in regressor $x$
+
+## Organizing simple linear regression analysis---'slr()'
+We can organize all the steps in the form of a function,names 'slr()' as:
+```{r slr1,message=FALSE,warning=FALSE}
+slr=function(X,y) {
+# A function which returns Simple Regression Analysis
+X=cbind(1,x)  # model matrix
+n=nrow(X)
+p1=ncol(X)
+XtX=crossprod(X,X)
+Xty=crossprod(X,y)
+beta= solve(XtX,Xty)
+resid=y-X%*%beta
+rss= sum(resid^2)
+msresid=rss/(n-p1)
+sebeta=sqrt(diag(msresid*solve(XtX)))
+tratio=beta/sebeta
+pvalue=2*(1-pt(abs(tratio),df=n-p1))
+out=data.frame(RegCoeff=beta,SEbeta=sebeta,Tvalue=tratio,pvalue=pvalue)
+return(out)
+}
+dump("slr",file="slr.txt")
+source("slr.txt")
+require(MASS)  # To load the MASS package as
+               # It contains 'forbes' data object.
+y=forbes$bp  # To extract y from forbes
+x=forbes$pres #To extract X from forbes
+# Now we can fit the Model using 'slr()'
+M1=slr(X=x,y=y )
+print(M1)
+```
+From above output it is evident that regression coefficient is statistically significant as its corresponding 'pvalue' is less than 0.05 .
+
+## Multiple Linear Regression---'mlr()'
+The basic difference between simple and multiple regression is that in simple there is only one predictor $x$, whereas in multiple regression it must be 2 or more. We shall write a function to implement multiple regression analysis with 2 regressors or covariates.
+```{r mlr,message=FALSE,warning=FALSE}
+mlr=function(y,x1,x2) {
+# Define a function to implement multiple linear regression
+# y is the response variable
+# x1 is one regressor
+# x2 is another regressor
+# This function returns Multiple Linear Analysis
+X=cbind(1,x1,x2)  # model matrix
+n=nrow(X)
+p1=ncol(X)
+XtX=crossprod(X,X)
+Xty=crossprod(X,y)
+beta= solve(XtX,Xty)
+resid=y-X%*%beta
+rss= sum(resid^2)
+msresid=rss/(n-p1)
+sebeta=sqrt(diag(msresid*solve(XtX)))
+tratio=beta/sebeta
+pvalue=2*(1-pt(abs(tratio),df=n-p1))
+out=data.frame(RegCoeff=beta,SEbeta=sebeta,Tvalue=tratio,pvalue=pvalue)
+out=round(out,3) # Round upto 3 digits
+return(out)  
+}
+dump("mlr",file="mlr.txt")
+## Analyse the data 'trees' using 'volume' as response and 
+ # 'Girth' and 'Height' as regressors.
+data(trees)
+names(trees)
+y=trees$Volume
+x1=trees$Girth
+x2=trees$Height
+M2=mlr(y,x1,x2)
+print(M2)
+```
+
+## Exercises based on above concepts.
+
+**Exercise 1**: Create a data frame consisting of  weight(in kg.),Height(in cm.),and Age(in years) of all  the students of B.Sc. (Vth Semester) . Fit a model :-
+$$Weight=\beta_0+\beta_1Height+\beta_2Age+e$$
+and write your comments and conclusions about the analysis.
+
+## Scatter plot matrix---'pairs()'
+Scatter plot is an extension of scatter diagram for more than two continuous variables. For making this scatter plot matrix, we have the function 'pairs()' in **R**. We shall make  use of 'trees' data for the purpose of illustration.
+```{r pairs1,message=FALSE,warning=FALSE,fig.cap="Scatter plot matrix for 'trees' data"}
+pairs(trees,panel=panel.smooth)
+```
+From above plot it is evident that there is strong linear relationship among the variables of data 'trees'. Using the function 'pairs()' with argument 'panel=panel.smooth()' we seen relationship among pairing variables. However, we want a linear relationship among the pairs. For this purpose we need a function which will plot fitted regression line in each panel.
+It will be define as:
+```{r pan1,message=FALSE,warning=FALSE,fig.cap="Scatter plot with fitted lines"}
+# Define a function pan1 which will implement these ideas.
+pan1=function(x,y) {
+points(x,y,pch=18) # to add points
+m=lm(y~x) # to fit a simple regression model
+abline(m,lwd=2)
+}
+dump("pan1",file="pan1.txt") # to save it
+source("pan1.txt")  # to source it at workplace
+# Use it with pairs as
+pairs(trees,panel=pan1) # to add fitted line in each panel
+```
+
+## The Function 'lm()'
+This function is meant for fitting ordinary least square regression model, namely
+$$y_i=\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px{ip}+e_i$$
+for $i=1,\cdots,n$. The function 'lm()' has two main arguments, 'formula' and 'data' specifies the data frame from which data is taken. It returns almost all the important things which are desired in the data analysis.
+
+### Example ('trees')
+The  data frame 'trees' , which is available in the package **datasets** in the **base R**, is a data frame consisting of columns of 'Volume'. 'Girth',and 'Height' of black cherry trees. To fit this data to an intercept model.
+$$y_i=\beta_0+e_i$$
+or
+$$Volume=\beta_0+e_i$$
+This model known as intercept model. We use the function 'lm()' to fit this model.
+```{r lmtrees}
+M0=lm(Volume~1,data=trees) # To fit
+print(M0)  # To print brief
+summary(M0) # To print detailed
+```
+
+## Fitting of **Simple Regression Model** using 'lm()'
+The simple regression model is one in which there is only one regressor or input. The model for 'trees' data with 'Grith' as input is 
+$$Volume=\beta_0+\beta_1Girth+e$$
+We fit it using 'lm()' as 
+```{r lmsimple}
+M1=lm(Volume~1+Girth,data=trees)
+# This is same as lm(Volume~Girth,data=trees)
+print(M1)
+summary(M1)
+```
+We can get a lot information from the fitted object 'M1' by using the following command :
+```{r names1}
+names(M1)
+names(summary(M1))
+```
+One can extract any of these using the component command $ or [] . For example to extract 'coefficients' we use
+```{r coefsimple}
+M1$coefficients
+```
+Similarly, to extract multiple $R^2$ use
+```{r Rsq1}
+summary(M1)$r.squared
+```
+
+## Extract important information from a fitted model
+From a fitted model, extract the information about regression coefficient $\hat{\beta}$ , model matrix $x$, residual sum of squares $\hat{e}^{T}\hat{e}$ , and variance covariance matrix of $\hat{\beta}$.
+```{r modelinformation}
+# for beta hat
+coef(M1)
+summary(M1)$coef
+# for residuals
+residuals(M1)
+# for residual sum of squares
+sum(residuals(M1)^2)
+# There is simple function deviance for it
+deviance(M1)
+# for model matrix X
+X=model.matrix(M1)
+X
+X[c(1:3,31),]
+# For MSresidual
+deviance(M1)/df.residual(M1)
+# Square root of it can be obtained as
+summary(M1)$sigma
+# To get fitted value Xbetahat
+X_betahat=fitted(M1)
+X_betahat
+# To get predicted values
+pred1=predict(M1) ;pred1
+# To get variance covariance matrix of beta
+vcov(M1)
+```
+
+## Centered form of Simple Regression Model
+The form of the model 
+$$y_i=\beta_0+\beta_1(x_i-\bar{x})+e_i$$
+is called the centered form of simple linear regression model. Note that in this form $\hat{\beta_1}$ remains same, but $\hat{\beta_0}=\bar{y}$ in this form. Moreover, $x_i$ is replaced by $(x_i-\bar{x})$ in the centered form. Thus to implement 'slr()' function 'x-mean(x)' , and call it into 'slr()' as argument 'x'. Similarly changes are also required in 'lm()' to implement it. We shall make use of the 'transform()' function for this data manipulation. Following set of commands will make the things more clear:
+```{r centeredReg}
+# Example of trees data with Girth as predictor .
+# Use the function transform () to transform the variable .
+d1=trees # Assign trees to d1
+d1=transform(d1,Girth.c=Girth-mean(Girth))
+head(d1)
+# Fit the centered form
+M1c=lm(Volume~Girth.c,data=d1)
+# Fit the non-centered form
+M1=lm(Volume~Girth,data=d1)
+summary(M1c) # See that beta1 is not change and beta0=mean(y)
+summary(M1)
+## See what happens in correlation matrix of beta.
+cov2cor(vcov(M1c))
+cov2cor(vcov(M1))
+```
+## Center Form of 'SLR()'
+
+```{r slrcent1}
+slr3=function(y,x1) {
+X=cbind(1,x1)  # model matrix
+n=nrow(X)
+p1=ncol(X)
+XtX=crossprod(X,X)
+Xty=crossprod(X,y)
+beta= solve(XtX,Xty)
+resid=y-X%*%beta
+rss= sum(resid^2)
+msresid=rss/(n-p1)
+sebeta=sqrt(diag(msresid*solve(XtX)))
+tratio=beta/sebeta
+pvalue=2*(1-pt(abs(tratio),df=n-p1))
+out=data.frame(RegCoeff=beta,SEbeta=sebeta,Tvalue=tratio,pvalue=pvalue)
+out=round(out,3) # Round upto 3 digits
+return(out)  
+}
+dump("slr3",file="slr3.txt")
+## Analyse the data 'trees' using 'volume' as response and 
+ # 'Girth' and 'Height' as regressors.
+d1=trees
+names(trees)
+y=d1$Volume
+x1=d1$Girth-mean(d1$Girth)
+M3c=slr3(y,x1)
+print(M3c)
+summary(M3c)
+```
+
+Note that estimates are highly correlated in non-centered form, whereas they are not in centered form. Moreover, $\hat{\beta_0}$ is simply $\bar{y}$, which is mean of the response vector $y$. 
+For these reasons, *centered form* is prefered over *non-centered form* of the model. These ideas can be extended to *Multiple Regression Model* also.
+
+## Fitting of Multiple Regression Model with 'lm()'
+For the 'trees' data one can fit a multiple regression model using the function 'lm()'. The model is
+$$Volume=\beta_0+\beta_1Girth+\beta_2Height+e$$
+This model can be fitted as :
+```{r mult_trees}
+# Fit a model M2
+M2=lm(Volume~Girth+Height,data=trees)
+print(M2)
+summary(M2)
+names(M2)
+coef(M2)
+coef(summary(M2))
+residuals(M2)[c(1,3,31)] # Only First, Third and 31st residuals
+X=model.matrix(M2)
+X
+X[c(1:4,31)] # to print first four and last row of X
+deviance(M2) # Residual sum of square
+df.residual(M2) # residual degrees of freedom
+msresid=deviance(M2)/df.residual(M2)
+msresid # hatsigma^2
+sqrt(msresid) # hatsigma
+summary(M2)$sigma
+fitted(M2)[c(1:4,31)]
+predict(M2)[c(1:4,31)]
+vcov(M2)
+cov2cor(vcov(M2)) # Covariance to Correlation Matrix
+```
+
+**Exercise**: Centered form with two predictors
+
+* We can extend *centered form* for multiple regression also.
+
+* Fit centered model for the 'trees' data, that is
+$$y_i=\beta_0+\beta_1(x_{i1}-\bar{x_1})+\beta_2(x_{i2}-\bar{x_2})+e_i$$
+or equivalently for 'trees' data
+$$Volume=\beta_0+\beta_1(Girth~mean(Girth))+\beta_2(Height-mean(Height))+error$$
+Using R commands. 
+
+**Hint:** Use the function 'transform()'  to get centered form of 'Girth' and 'Height', and then fit the centered form for it.
+
+*Solution*
+
+
+```{r cent1}
+d2=trees # Assign trees to d1
+d2=transform(d1,Girth.c=Girth-mean(Girth),Height.c=Height-mean(Height))
+head(d2)
+# Fit the centered form
+M2c=lm(Volume~Girth.c+Height.c,data=d2)
+# Fit the non-centered form
+M2=lm(Volume~Girth+Height,data=d2)
+summary(M2c) # See that beta1 is not change and beta0=mean(y)
+summary(M2)
+## See what happens in correlation matrix of beta.
+cov2cor(vcov(M2c))
+cov2cor(vcov(M2))
+```
+
+## Centered Model by Own Model
+
+```{r mlrcent1}
+mlr4=function(y,x1,x2) {
+X=cbind(1,x1,x2)  # model matrix
+n=nrow(X)
+p1=ncol(X)
+XtX=crossprod(X,X)
+Xty=crossprod(X,y)
+beta= solve(XtX,Xty)
+resid=y-X%*%beta
+rss= sum(resid^2)
+msresid=rss/(n-p1)
+sebeta=sqrt(diag(msresid*solve(XtX)))
+tratio=beta/sebeta
+pvalue=2*(1-pt(abs(tratio),df=n-p1))
+out=data.frame(RegCoeff=beta,SEbeta=sebeta,Tvalue=tratio,pvalue=pvalue)
+out=round(out,3) # Round upto 3 digits
+return(out)  
+}
+dump("mlr4",file="mlr4.txt")
+## Analyse the data 'trees' using 'volume' as response and 
+ # 'Girth' and 'Height' as regressors.
+d2=trees
+names(trees)
+y=d2$Volume
+x1=trees$Girth-mean(d2$Girth)
+x2=trees$Height-mean(d2$Height)
+M4c=mlr4(y,x1,x2)
+print(M4c)
+summary(M4c)
+```
+
+
+**Exercise 2** : Generate a data frame on 'Weight','Height' and 'Age' of  the students of B.Sc.(V) Semester . Fit this data using "Weight' as response and 'Height' and 'Age' as regressors. Make your comments on the results obtained.
+
+*Solution*
+
+```{r classdetail}
+height=c(175,170,180,173,170,172,165,174,160,172,177,172,170,172,170,165,165,180,167,177,170,170,177,180,172,165,170,167,165)
+weight=c(65,63,90,55,60,62,53,68,43,62,70,55,62,75,60,67,45,58,75,78,65,55,80,60,63,60,62,59,58)
+Age=c(21,20,21,20,20,21,22,22,19,21,20,20,21,22,20,23,20,23,23,20,21,22,23,21,22,22,21,22,21)
+Vsem=data.frame("HEIGHT"=height,"WEIGHT"=weight,"AGE"=Age)
+Vsem
+dump("Vsem",file = "Vsem.txt")
+source("Vsem.txt")
+# for mlr
+V=lm(weight~height+Age)
+V
+print(V)
+summary(V)
+```
+## Model Comparision 
+
+* Check whether multiple Regression Model is better than Simple or not.
+
+* This model comparison is based on the concept of extra sum of squares.
+
+* _R_implemention is 'anova()'
+
+Let $M_1$ and $M_2$ be the two models defined as
+$$M_2:\quad y=\beta_0+\beta_1x_1+e$$
+and
+$$M2:\quad y=\beta_0+\beta_1x_1+\beta_2x_2+e$$
+* It may be noted that residual sum of square for $M_1$ will be more than that of $M_2$.
+
+* For 'trees' data with 'Girth' as predictor we have
+```{r m1}
+M1=lm(Volume~Girth,data=trees) ;M1
+```
+When both 'Girth' and 'Height' are used as predictors, we have
+```{r m2}
+M2=lm(Volume~Girth+Height,data=trees) ;M2
+```
+
+Get the important summaries for these two models:
+```{r dev1}
+deviance(M1)
+deviance(M2)
+df.residual(M1)
+df.residual(M2)
+# make a model comparison
+anova(M1,M2)
+```
+This shows that addition of 'Height' significantly improves the model.Hence model $M_2$ is better than model $M_1$ .
+
+## Exercises :
+
+*(1) Fit the data set 'trees' using 'slr()' and 'mlr()' and compare your results with 'lm()'.
+
+*(2) Fit the same that data 'trees' using 'slr()' and 'mlr()' as centered form, and compare your results with 'lm()' . 
+
+*Soluton*
+*(1)
+```{r slr3,message=FALSE,warning=FALSE}
+slr3=function(X,y) {
+# A function which returns Simple Regression Analysis for trees data 
+X=cbind(1,x)  # model matrix
+n=nrow(X)
+p1=ncol(X)
+XtX=crossprod(X,X)
+Xty=crossprod(X,y)
+beta= solve(XtX,Xty)
+resid=y-X%*%beta
+rss= sum(resid^2)
+msresid=rss/(n-p1)
+sebeta=sqrt(diag(msresid*solve(XtX)))
+tratio=beta/sebeta
+pvalue=2*(1-pt(abs(tratio),df=n-p1))
+out=data.frame(RegCoeff=beta,SEbeta=sebeta,Tvalue=tratio,pvalue=pvalue)
+return(out)
+}
+dump("slr3",file="slr3.txt")
+source("slr3.txt")
+y=trees$Volume  # To extract y from trees
+x=trees$Girth #To extract X from trees
+# Now we can fit the Model using 'slr()'
+A1=slr3(X=x,y=y )
+print(A1)
+summary(A1)
+A2=lm(Volume~Girth,data=trees)
+A2
+print(A2)
+summary(A2)
+```
+*(2)
+```{r mlr3,message=FALSE,warning=FALSE}
+mlr3=function(y,x1,x2) {
+# Define a function to implement multiple linear regression from trees data
+# y is the response variable
+# x1 is one regressor
+# x2 is another regressor
+# This function returns Multiple Linear Analysis
+X=cbind(1,x1,x2)  # model matrix
+n=nrow(X)
+p1=ncol(X)
+XtX=crossprod(X,X)
+Xty=crossprod(X,y)
+beta= solve(XtX,Xty)
+resid=y-X%*%beta
+rss= sum(resid^2)
+msresid=rss/(n-p1)
+sebeta=sqrt(diag(msresid*solve(XtX)))
+tratio=beta/sebeta
+pvalue=2*(1-pt(abs(tratio),df=n-p1))
+out=data.frame(RegCoeff=beta,SEbeta=sebeta,Tvalue=tratio,pvalue=pvalue)
+out=round(out,3) # Round upto 3 digits
+return(out)  
+}
+dump("mlr3",file="mlr3.txt")
+## Analyse the data 'trees' using 'volume' as response and 
+ # 'Girth' and 'Height' as regressors.
+data(trees)
+names(trees)
+y=trees$Volume
+x1=trees$Girth
+x2=trees$Height
+M4=mlr(y,x1,x2)
+print(M4)
+summary(M4)
+A4=lm(Volume~Girth+Height,data=trees)
+A4
+print(A4)
+summary(A4)
+```
+
+
+
+
+       
+
+
